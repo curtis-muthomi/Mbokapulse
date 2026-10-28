@@ -15,6 +15,7 @@ import {
   Tooltip, XAxis, YAxis,
 } from 'recharts'
 import './App.css'
+import './editorial.css'
 
 type Page = 'Overview' | 'Post Analyzer' | 'Comment Intelligence' | 'Trends' | 'Ads Research' | 'Reports'
 const NAV: { label: Page; icon: typeof LayoutDashboard }[] = [
@@ -29,7 +30,7 @@ const PLATFORMS: Platform[] = ['Instagram', 'TikTok', 'Facebook', 'YouTube', 'X'
 const CONTENT_TYPES = ['Video', 'Image', 'Carousel', 'Text', 'Story', 'Live', 'Other']
 const numberFields = ['views', 'reach', 'likes', 'comments', 'shares', 'clicks'] as const
 type PostNumberField = typeof numberFields[number]
-const chartColors = ['#9b8cff', '#42d3b2', '#ffb86b', '#ff7285', '#71a9ff', '#d58aff']
+const chartColors = ['#d95035', '#7c8c78', '#b28a53', '#758697', '#a76552', '#88857b']
 const plural = (count: number, singular: string, multiple = `${singular}s`) => `${count} ${count === 1 ? singular : multiple}`
 const engagementLabel = (post: Post) => {
   const rate = engagementRate(post)
@@ -378,7 +379,7 @@ function App() {
         <div className="workspace-label">WORKSPACE</div>
         <nav className="side-nav" aria-label="Main navigation">
           {NAV.map(({ label, icon: Icon }) => (
-            <button key={label} className={`nav-item ${page === label ? 'active' : ''}`} onClick={() => setPage(label)}>
+            <button key={label} className={`nav-item ${page === label ? 'active' : ''}`} aria-label={label} aria-current={page === label ? 'page' : undefined} onClick={() => setPage(label)}>
               <Icon size={18} strokeWidth={1.8} /><span>{label}</span>{label === 'Comment Intelligence' && data.comments.length > 0 && <span className="nav-count">{data.comments.length}</span>}
             </button>
           ))}
@@ -466,10 +467,10 @@ function App() {
             <div className="notice-strip"><Sparkles size={16} /><span>When loaded, synthetic demo posts are labeled in tables and shown with muted chart bars; demo comments remain tagged in comment records.</span></div>
             <div className="two-column">
               <div className="section-card chart-card"><div className="card-title-row"><div><h2>Post comparison</h2><p>{filteredPosts.length} posts match current filters</p></div><BarChart3 size={18} className="muted" /></div>
-                  {filteredPosts.some((post) => trendMetric === 'engagement' ? engagementRate(post) !== null : post[trendMetric] !== null) ? <div className="chart-wrap"><ResponsiveContainer width="100%" height={260}><BarChart data={filteredPosts.filter((post) => trendMetric === 'engagement' ? engagementRate(post) !== null : post[trendMetric] !== null).map((post) => ({ name: `${(post.caption || post.author || post.platform).slice(0, 24)}${trendMetric === 'engagement' ? ` (${post.reach === null ? 'views' : 'reach'})` : ''}`, value: trendMetric === 'engagement' ? engagementRate(post) : post[trendMetric], demo: post.isDemo }))} margin={{ left: 0, right: 12, top: 10, bottom: 20 }}><CartesianGrid stroke="#292c36" vertical={false} /><XAxis dataKey="name" tick={{ fill: '#8b90a0', fontSize: 10 }} angle={-15} textAnchor="end" interval={0} /><YAxis tick={{ fill: '#8b90a0', fontSize: 11 }} /><Tooltip contentStyle={{ background: '#1b1e27', border: '1px solid #313543', borderRadius: 8 }} /><Bar dataKey="value" name={trendMetric === 'engagement' ? 'Engagement %' : trendMetric} radius={[5, 5, 0, 0]}>{filteredPosts.map((post, index) => <Cell key={post.id} fill={post.isDemo ? '#6d667d' : chartColors[index % chartColors.length]} />)}</Bar></BarChart></ResponsiveContainer></div> : <EmptyState title="Not enough recorded metrics" text="Matching posts need the selected metric to compare." />}
+                  {filteredPosts.some((post) => trendMetric === 'engagement' ? engagementRate(post) !== null : post[trendMetric] !== null) ? <div className="chart-wrap"><ResponsiveContainer width="100%" height={260}><BarChart data={filteredPosts.filter((post) => trendMetric === 'engagement' ? engagementRate(post) !== null : post[trendMetric] !== null).map((post) => ({ name: `${(post.caption || post.author || post.platform).slice(0, 24)}${trendMetric === 'engagement' ? ` (${post.reach === null ? 'views' : 'reach'})` : ''}`, value: trendMetric === 'engagement' ? engagementRate(post) : post[trendMetric], demo: post.isDemo }))} margin={{ left: 0, right: 12, top: 10, bottom: 20 }}><CartesianGrid stroke="#d9d4c9" vertical={false} /><XAxis dataKey="name" tick={{ fill: '#77746c', fontSize: 10 }} angle={-15} textAnchor="end" interval={0} /><YAxis tick={{ fill: '#77746c', fontSize: 11 }} /><Tooltip contentStyle={{ background: '#fbf9f4', border: '1px solid #d9d4c9', borderRadius: 3, color: '#22221f' }} /><Bar dataKey="value" name={trendMetric === 'engagement' ? 'Engagement %' : trendMetric} radius={[2, 2, 0, 0]}>{filteredPosts.map((post, index) => <Cell key={post.id} fill={post.isDemo ? '#aaa59a' : chartColors[index % chartColors.length]} />)}</Bar></BarChart></ResponsiveContainer></div> : <EmptyState title="Not enough recorded metrics" text="Matching posts need the selected metric to compare." />}
               </div>
               <div className="section-card chart-card"><div className="card-title-row"><div><h2>Sentiment over time</h2><p>Based on comment record dates</p></div><Activity size={18} className="muted" /></div>
-                {new Set(trendComments.map((comment) => comment.createdAt)).size >= 2 ? <div className="chart-wrap"><ResponsiveContainer width="100%" height={260}><LineChart data={[...new Set(trendComments.map((comment) => comment.createdAt))].sort().map((date) => ({ date, positive: trendComments.filter((comment) => comment.createdAt === date && comment.sentiment === 'positive').length, neutral: trendComments.filter((comment) => comment.createdAt === date && comment.sentiment === 'neutral').length, negative: trendComments.filter((comment) => comment.createdAt === date && comment.sentiment === 'negative').length }))}><CartesianGrid stroke="#292c36" vertical={false} /><XAxis dataKey="date" tick={{ fill: '#8b90a0', fontSize: 10 }} /><YAxis tick={{ fill: '#8b90a0', fontSize: 11 }} allowDecimals={false} /><Tooltip contentStyle={{ background: '#1b1e27', border: '1px solid #313543', borderRadius: 8 }} /><Line type="monotone" dataKey="positive" stroke="#42d3b2" strokeWidth={2} /><Line type="monotone" dataKey="neutral" stroke="#9b8cff" strokeWidth={2} /><Line type="monotone" dataKey="negative" stroke="#ff7285" strokeWidth={2} /></LineChart></ResponsiveContainer></div> : <EmptyState title="Need at least two comment dates" text="Record comments on separate dates to view a time trend." />}
+                {new Set(trendComments.map((comment) => comment.createdAt)).size >= 2 ? <div className="chart-wrap"><ResponsiveContainer width="100%" height={260}><LineChart data={[...new Set(trendComments.map((comment) => comment.createdAt))].sort().map((date) => ({ date, positive: trendComments.filter((comment) => comment.createdAt === date && comment.sentiment === 'positive').length, neutral: trendComments.filter((comment) => comment.createdAt === date && comment.sentiment === 'neutral').length, negative: trendComments.filter((comment) => comment.createdAt === date && comment.sentiment === 'negative').length }))}><CartesianGrid stroke="#d9d4c9" vertical={false} /><XAxis dataKey="date" tick={{ fill: '#77746c', fontSize: 10 }} /><YAxis tick={{ fill: '#77746c', fontSize: 11 }} allowDecimals={false} /><Tooltip contentStyle={{ background: '#fbf9f4', border: '1px solid #d9d4c9', borderRadius: 3, color: '#22221f' }} /><Line type="monotone" dataKey="positive" stroke="#7c8c78" strokeWidth={2} /><Line type="monotone" dataKey="neutral" stroke="#b28a53" strokeWidth={2} /><Line type="monotone" dataKey="negative" stroke="#d95035" strokeWidth={2} /></LineChart></ResponsiveContainer></div> : <EmptyState title="Need at least two comment dates" text="Record comments on separate dates to view a time trend." />}
               </div>
             </div>
             <div className="notice-strip"><CircleHelp size={16} /><span>Engagement rate by reach = (likes + comments + shares) ÷ reach × 100. If reach is unavailable, the chart explicitly uses views as an alternative denominator. Incomplete metrics are excluded, never treated as zero.</span></div>
@@ -533,8 +534,21 @@ function Overview({ posts, comments, totals, avg, sentimentCounts, postsByScore,
   const best = postsByScore.filter((post) => engagementRate(post) !== null).slice(0, 3)
   const totalComments = comments.length
   return <section>
-    <PageHeading eyebrow="YOUR RESEARCH AT A GLANCE" title="Overview" description="A clear view of the research records collected in this workspace." action={<button className="button primary" onClick={() => go('Post Analyzer')}><Plus size={16} /> Add research</button>} />
+    <PageHeading eyebrow="YOUR RESEARCH AT A GLANCE" title="Research briefing" description="A clear view of the research records collected in this workspace." action={<button className="button primary" onClick={() => go('Post Analyzer')}><Plus size={16} /> Add research</button>} />
     <div className="data-scope-banner"><span className="scope-dot" /> Figures below reflect records saved here only—not platform-wide analytics. Demo records, if loaded, are included and individually labeled. <span>Missing values are excluded, never assumed to be zero.</span></div>
+    <article className="featured-insight">
+      <div className="featured-insight-label">LEADING POST · RECORDED ENGAGEMENT</div>
+      {best.length ? <div className="featured-insight-content">
+        <div>
+          <h2>{best[0].caption || best[0].url}</h2>
+          <p>{best[0].platform} · {best[0].publishedAt || 'Publication date not recorded'}{best[0].isDemo ? ' · SYNTHETIC DEMO' : ''}</p>
+        </div>
+        <div className="featured-insight-rate"><strong>{engagementLabel(best[0]).split(' ')[0]}</strong><span>engagement by {best[0].reach === null ? 'views' : 'reach'}</span></div>
+      </div> : <div className="featured-insight-content">
+        <div><h2>No comparable post in this sample</h2><p>A recorded reach or views value and complete engagement metrics are needed to calculate a rate.</p></div>
+        <button className="text-button" onClick={() => go('Post Analyzer')}>Add research →</button>
+      </div>}
+    </article>
     <div className="stats-grid">
       <StatCard label="Analyzed posts" value={formatNumber(posts.length)} note={`${posts.filter((post) => !post.isDemo).length} research · ${posts.filter((post) => post.isDemo).length} demo`} icon={<Activity size={18} />} />
       <StatCard label="Recorded views" value={formatNumber(views.count ? views.value : null)} note={views.count ? `${views.count} of ${posts.length} ${posts.length === 1 ? 'post has' : 'posts have'} views` : 'No views recorded'} icon={<Eye size={18} />} />
@@ -545,7 +559,7 @@ function Overview({ posts, comments, totals, avg, sentimentCounts, postsByScore,
     </div>
     <div className="two-column overview-charts">
       <div className="section-card chart-card"><div className="card-title-row"><div><h2>Comment sentiment</h2><p>{totalComments} saved comment{totalComments === 1 ? '' : 's'} · preliminary local labels</p></div><MessageCircle size={18} className="muted" /></div>
-        {totalComments ? <div className="sentiment-chart"><div className="pie-wrap"><ResponsiveContainer width="100%" height={190}><PieChart><Pie data={sentimentCounts} dataKey="value" nameKey="name" innerRadius={58} outerRadius={82} paddingAngle={4}><Cell fill="#42d3b2" /><Cell fill="#9b8cff" /><Cell fill="#ff7285" /></Pie><Tooltip contentStyle={{ background: '#1b1e27', border: '1px solid #313543', borderRadius: 8 }} /></PieChart></ResponsiveContainer><div className="pie-center"><strong>{totalComments}</strong><small>COMMENTS</small></div></div><div className="legend-list">{sentimentCounts.map((entry, index) => <div key={entry.name}><span className={`legend-dot color-${index}`} />{entry.name}<b>{entry.value}</b></div>)}</div></div> : <EmptyState title="No comments analyzed" text="Add comments to see the distribution of preliminary sentiment labels." />}</div>
+        {totalComments ? <div className="sentiment-chart"><div className="pie-wrap"><ResponsiveContainer width="100%" height={190}><PieChart><Pie data={sentimentCounts} dataKey="value" nameKey="name" innerRadius={58} outerRadius={82} paddingAngle={4}><Cell fill="#7c8c78" /><Cell fill="#b28a53" /><Cell fill="#d95035" /></Pie><Tooltip contentStyle={{ background: '#fbf9f4', border: '1px solid #d9d4c9', borderRadius: 3, color: '#22221f' }} /></PieChart></ResponsiveContainer><div className="pie-center"><strong>{totalComments}</strong><small>COMMENTS</small></div></div><div className="legend-list">{sentimentCounts.map((entry, index) => <div key={entry.name}><span className={`legend-dot color-${index}`} />{entry.name}<b>{entry.value}</b></div>)}</div></div> : <EmptyState title="No comments analyzed" text="Add comments to see the distribution of preliminary sentiment labels." />}</div>
       <div className="section-card chart-card"><div className="card-title-row"><div><h2>Frequent comment themes</h2><p>Keyword-based counts · demo comments remain labeled</p></div><Sparkles size={18} className="muted" /></div>
         {themes.some((theme) => theme.count) ? <div className="theme-bars">{themes.filter((theme) => theme.count).slice(0, 5).map((theme, index) => <div className="theme-bar-row" key={theme.name}><div><span>{theme.name}</span><b>{theme.count}</b></div><div className="theme-meter"><span style={{ width: `${Math.max(4, theme.count / themes[0].count * 100)}%`, background: chartColors[index] }} /></div></div>)}</div> : <EmptyState title="No themes identified" text="Add real comments to uncover recurring audience themes." />}</div>
     </div>
